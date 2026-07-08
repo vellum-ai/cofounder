@@ -1,0 +1,15 @@
+{
+  "name": "cofounder",
+  "version": "0.1.0",
+  "description": "AI co-founder that remembers your company context, challenges your thinking, and tracks your decisions. Built for founders who want a thinking partner, not a yes-man.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "peerDependencies": {
+    "@vellumai/plugin-api": ">=0.8.0 <1.0.0"
+  },
+  "vellum": {}
+}

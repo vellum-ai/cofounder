@@ -1,0 +1,6 @@
+{
+  "challengeStyle": "direct",
+  "autoLogDecisions": true,
+  "briefingCadence": "weekly",
+  "contextInjection": true
+}
