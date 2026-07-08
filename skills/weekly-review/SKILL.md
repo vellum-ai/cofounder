@@ -9,6 +9,8 @@ metadata:
   emoji: "📊"
   vellum:
     display-name: "Weekly Review"
+    includes:
+      - cofounder-tools
     activation-hints:
       - "User asks for a weekly review or weekly update"
       - "User asks 'what happened this week' or 'what's the status'"

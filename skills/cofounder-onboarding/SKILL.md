@@ -10,6 +10,8 @@ metadata:
   emoji: "🚀"
   vellum:
     display-name: "Co-Founder Onboarding"
+    includes:
+      - cofounder-tools
     activation-hints:
       - "User just installed the co-founder plugin"
       - "User says they're starting a company or have a startup"

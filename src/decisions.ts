@@ -1,7 +1,7 @@
 // Decision analysis utilities — search, pattern detection,
 // and blind-spot generation logic.
 
-import type { CompanyState, Decision, CompanyProfile } from "./types.ts";
+import type { Decision, CompanyProfile } from "./types.ts";
 
 /** Search decisions by text query across title, rationale, and tags. */
 export function searchDecisions(

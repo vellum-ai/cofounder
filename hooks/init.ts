@@ -1,20 +1,31 @@
-// init hook — runs when the plugin loads.
-// Loads config.json, loads (or creates) company state, and captures
-// the pluginStorageDir for the tools (ToolContext doesn't carry it).
+// init hook — runs when the plugin loads. Ensures the data directory and
+// company-state file exist so hooks and skill tool executors can read them.
+// State access is stateless (fresh disk reads per call), so this hook only
+// provisions the file — it does not cache anything in memory.
 
-import { initStorage } from "../src/state.ts";
+import { ensureStateFile } from "../src/state.ts";
 
 export default async function init(ctx: {
   config?: unknown;
   pluginStorageDir: string;
-  logger?: { info: (obj: unknown, msg: string) => void };
+  logger?: {
+    info: (obj: unknown, msg: string) => void;
+    warn?: (obj: unknown, msg: string) => void;
+  };
 }): Promise<void> {
-  initStorage(ctx.pluginStorageDir);
-
-  if (ctx.logger) {
-    ctx.logger.info(
-      { plugin: "cofounder", storageDir: ctx.pluginStorageDir },
-      "cofounder initialized",
+  try {
+    ensureStateFile();
+  } catch (err) {
+    // Degrade rather than block boot — executors fall back to default state.
+    ctx.logger?.warn?.(
+      { plugin: "cofounder", err },
+      "cofounder failed to provision state file",
     );
+    return;
   }
+
+  ctx.logger?.info(
+    { plugin: "cofounder", storageDir: ctx.pluginStorageDir },
+    "cofounder initialized",
+  );
 }

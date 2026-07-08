@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "name": "cofounder_profile",
+      "description": "Store and retrieve the user's company profile for the co-founder plugin. Actions: 'get' (read current profile), 'update' (merge provided fields into profile), 'clear' (reset profile). Use 'update' during onboarding to build the profile incrementally, and later when company context changes. The profile includes: name, stage (idea|mvp|early-revenue|scaling|profitable|other), sector, description, team (array of {name, role, notes?}), funding, top_challenges (string array), current_focus.",
+      "category": "cofounder",
+      "risk": "low",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["get", "update", "clear"],
+            "description": "Which operation to perform."
+          },
+          "name": { "type": "string", "description": "Company name." },
+          "stage": {
+            "type": "string",
+            "enum": ["idea", "mvp", "early-revenue", "scaling", "profitable", "other"],
+            "description": "Company stage."
+          },
+          "sector": { "type": "string", "description": "Industry or sector." },
+          "description": { "type": "string", "description": "What the company does, in 1-2 sentences." },
+          "team": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "role": { "type": "string" },
+                "notes": { "type": "string" }
+              },
+              "required": ["name", "role"]
+            },
+            "description": "Team members."
+          },
+          "funding": { "type": "string", "description": "Funding status, e.g. 'bootstrapped', 'Seed $2M', 'Series A, 18mo runway'." },
+          "top_challenges": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Top 3 current challenges or priorities."
+          },
+          "current_focus": { "type": "string", "description": "What the founder is focused on right now." }
+        },
+        "required": ["action"]
+      },
+      "executor": "tools/cofounder-profile.ts",
+      "execution_target": "sandbox"
+    },
+    {
+      "name": "cofounder_decision",
+      "description": "Log, list, review, and search strategic decisions for the co-founder plugin. Actions: 'log' (create a new decision with title, rationale, alternatives_considered?, tags?), 'list' (get recent decisions, optional limit), 'review' (update a decision's status and outcome by id), 'search' (find decisions by text query across title, rationale, tags, outcome). Decision statuses: proposed, decided, implemented, reversed, abandoned. Use this when the user makes a strategic choice, wants to review past decisions, or asks 'what did I decide about...'.",
+      "category": "cofounder",
+      "risk": "low",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["log", "list", "review", "search"],
+            "description": "Which operation to perform."
+          },
+          "title": { "type": "string", "description": "log: short title for the decision." },
+          "rationale": { "type": "string", "description": "log: why this decision was made." },
+          "alternatives_considered": { "type": "string", "description": "log: what alternatives were weighed." },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "log: tags for categorization (e.g. 'pricing', 'hiring', 'fundraising')."
+          },
+          "id": { "type": "string", "description": "review: the decision id to update." },
+          "status": {
+            "type": "string",
+            "enum": ["proposed", "decided", "implemented", "reversed", "abandoned"],
+            "description": "review: new status for the decision."
+          },
+          "outcome": { "type": "string", "description": "review: what happened as a result." },
+          "query": { "type": "string", "description": "search: text to search for." },
+          "limit": { "type": "number", "description": "list: max number of decisions to return (default 10)." }
+        },
+        "required": ["action"]
+      },
+      "executor": "tools/cofounder-decision.ts",
+      "execution_target": "sandbox"
+    },
+    {
+      "name": "cofounder_blindspot",
+      "description": "Surface blind spots for a proposed plan, decision, or strategy. Returns challenge areas tailored to the company's stage, team size, and context, plus relevant past decisions that may inform the current thinking. Use during strategy sessions when the user proposes a direction and you need to challenge it as a co-founder would. The challengeStyle config determines whether the output is direct pushback or exploratory questions.",
+      "category": "cofounder",
+      "risk": "low",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "description": "The plan, decision, or strategy being evaluated. Be specific."
+          }
+        },
+        "required": ["plan"]
+      },
+      "executor": "tools/cofounder-blindspot.ts",
+      "execution_target": "sandbox"
+    },
+    {
+      "name": "cofounder_briefing",
+      "description": "Generate a board-meeting-style briefing from recent decisions, stuck items, OKR drift, and company context. Use when the user asks for a weekly review, board prep, 'what's the status', or when the weekly-review skill activates. Returns structured data the model formats into a readable briefing. Optional 'days' parameter limits the decision window (default 7).",
+      "category": "cofounder",
+      "risk": "low",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "number",
+            "description": "Number of days to include in the briefing window (default 7)."
+          }
+        }
+      },
+      "executor": "tools/cofounder-briefing.ts",
+      "execution_target": "sandbox"
+    },
+    {
+      "name": "cofounder_okr",
+      "description": "Track quarterly objectives and key results (OKRs) for the co-founder plugin. Actions: 'list' (show all objectives), 'add_objective' (create with title, quarter, owner?), 'add_kr' (add key result to objective: objective_id, kr_description, kr_target), 'update_kr' (update progress: objective_id, kr_index, kr_current?, kr_progress?, kr_status?), 'remove_objective' (delete by id). KR status auto-derives from progress if not specified: 100=completed, 70+=on-track, 40+=at-risk, 20+=behind, <20=off-track. Use when the user sets goals, tracks progress, or asks about OKR status.",
+      "category": "cofounder",
+      "risk": "low",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["list", "add_objective", "add_kr", "update_kr", "remove_objective"],
+            "description": "Which operation to perform."
+          },
+          "title": { "type": "string", "description": "add_objective: objective title." },
+          "quarter": { "type": "string", "description": "add_objective: quarter label, e.g. '2026-Q3'." },
+          "owner": { "type": "string", "description": "add_objective: who owns this objective." },
+          "objective_id": { "type": "string", "description": "add_kr/update_kr/remove_objective: the objective id." },
+          "kr_description": { "type": "string", "description": "add_kr: what the key result measures." },
+          "kr_target": { "type": "string", "description": "add_kr: the target value." },
+          "kr_index": { "type": "number", "description": "update_kr: index of the key result to update (0-based)." },
+          "kr_current": { "type": "string", "description": "update_kr: current value." },
+          "kr_progress": { "type": "number", "description": "update_kr: progress percentage 0-100." },
+          "kr_status": {
+            "type": "string",
+            "enum": ["on-track", "at-risk", "behind", "completed", "off-track"],
+            "description": "update_kr: override auto-derived status."
+          }
+        },
+        "required": ["action"]
+      },
+      "executor": "tools/cofounder-okr.ts",
+      "execution_target": "sandbox"
+    }
+  ]
+}

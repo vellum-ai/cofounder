@@ -1,8 +1,10 @@
 // user-prompt-submit hook — injects company context into every conversation
 // after onboarding. This is the "your co-founder always knows your company"
 // mechanism. Skips injection if no profile exists yet (during onboarding).
+// State is read fresh from disk on every call: the skill tool executors that
+// write it run in sandbox subprocesses, so an in-memory copy would go stale.
 
-import { getState, getConfig } from "../src/state.ts";
+import { loadState, loadConfig } from "../src/state.ts";
 import { formatContextBlock } from "../src/decisions.ts";
 
 export default async function userPromptSubmit(ctx: {
@@ -11,21 +13,14 @@ export default async function userPromptSubmit(ctx: {
   latestMessages: Array<{ role: string; content: unknown }>;
   logger?: { debug: (obj: unknown, msg: string) => void };
 }): Promise<void> {
-  let state;
-  try {
-    state = getState();
-  } catch {
-    // State not loaded — skip injection.
+  const config = loadConfig();
+  if (!config.contextInjection) {
     return;
   }
 
+  const state = loadState();
   if (!state.profile) {
     // No profile yet — onboarding hasn't run. Don't inject.
-    return;
-  }
-
-  const config = getConfig();
-  if (!config.contextInjection) {
     return;
   }
 

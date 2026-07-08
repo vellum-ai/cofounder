@@ -10,6 +10,8 @@ metadata:
   emoji: "🎯"
   vellum:
     display-name: "Strategy Session"
+    includes:
+      - cofounder-tools
     activation-hints:
       - "User asks what you think about a plan or decision"
       - "User wants to think through something strategically"

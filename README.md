@@ -29,23 +29,25 @@ Edit `config.json` in the plugin directory:
 
 ## Surfaces
 
-### Tools
+### Skills
+- `cofounder-tools` — The tool surface: company profile, decision log, OKRs, blind spots, briefings. Tools are skill-scoped (loaded on demand, not always-on) and the other three skills include this one, so the tools are available whenever any co-founder skill is active.
+- `cofounder-onboarding` — First-run company setup (the activation critical path)
+- `strategy-session` — Active co-founder mode with pushback and blind spot surfacing
+- `weekly-review` — Summarize the week, flag stuck items, surface OKR drift
+
+### Skill tools (bundled in `cofounder-tools`)
 - `cofounder_profile` — Store and retrieve company context
 - `cofounder_decision` — Log, list, review, and search strategic decisions
 - `cofounder_blindspot` — Surface blind spots for a proposed plan or decision
 - `cofounder_briefing` — Generate a board-meeting-style briefing
 - `cofounder_okr` — Track quarterly objectives and key results
 
-### Skills
-- `cofounder-onboarding` — First-run company setup (the activation critical path)
-- `strategy-session` — Active co-founder mode with pushback and blind spot surfacing
-- `weekly-review` — Summarize the week, flag stuck items, surface OKR drift
+Executors run in the skill sandbox and persist state to `data/company-state.json` on every write.
 
 ### Hooks
-- `init` — Load company state from `data/company-state.json`
+- `init` — Ensure `data/company-state.json` exists
 - `user-prompt-submit` — Inject company context into conversations
 - `post-model-call` — Detect decision-like statements, offer to log
-- `stop` — Persist state changes to disk
 
 ## License
 

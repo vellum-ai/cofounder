@@ -3,7 +3,7 @@
 // a single line at the end of the response, only when decision language
 // is detected and autoLogDecisions is enabled.
 
-import { getConfig } from "../src/state.ts";
+import { loadConfig } from "../src/state.ts";
 import { detectDecisionSignal } from "../src/decisions.ts";
 
 export default async function postModelCall(ctx: {
@@ -18,7 +18,7 @@ export default async function postModelCall(ctx: {
     return;
   }
 
-  const config = getConfig();
+  const config = loadConfig();
   if (!config.autoLogDecisions) {
     return;
   }

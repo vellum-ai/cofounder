@@ -1,29 +1,19 @@
-// cofounder_briefing tool — generate a board-meeting-style briefing
+// cofounder_briefing executor — generate a board-meeting-style briefing
 // from recent decisions, stuck items, OKR drift, and company context.
 // The model calls this to structure a weekly review or board prep.
 
-import {
-  RiskLevel,
-  type ToolContext,
-  type ToolDefinition,
-  type ToolExecutionResult,
-} from "@vellumai/plugin-api";
-
-import { getState, markDirty, now } from "../src/state.ts";
+import { loadState, saveState, now } from "../../../src/state.ts";
+import { ok, type SkillToolResult } from "../../../src/tool-result.ts";
 import {
   recentDecisions,
   stuckDecisions,
   decisionBreakdown,
-} from "../src/decisions.ts";
-import type { Objective, KeyResult } from "../src/types.ts";
+} from "../../../src/decisions.ts";
+import type { Objective, KeyResult } from "../../../src/types.ts";
 
 interface BriefingInput {
   // Optional: limit decisions to last N days. Default 7.
   days?: number;
-}
-
-function ok(data: unknown): ToolExecutionResult {
-  return { content: JSON.stringify(data, null, 2), isError: false };
 }
 
 function okrsAtRisk(objectives: Objective[]): { objective: string; krs: KeyResult[] }[] {
@@ -38,8 +28,11 @@ function okrsAtRisk(objectives: Objective[]): { objective: string; krs: KeyResul
     .filter((entry) => entry.krs.length > 0);
 }
 
-async function run(input: BriefingInput): Promise<ToolExecutionResult> {
-  const state = getState();
+export async function run(
+  rawInput: Record<string, unknown>,
+): Promise<SkillToolResult> {
+  const input = rawInput as unknown as BriefingInput;
+  const state = loadState();
   const days = input.days ?? 7;
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
 
@@ -59,7 +52,7 @@ async function run(input: BriefingInput): Promise<ToolExecutionResult> {
 
   // Update last briefing date.
   state.lastBriefingDate = now();
-  markDirty();
+  saveState(state);
 
   return ok({
     companyProfile: state.profile
@@ -92,26 +85,3 @@ async function run(input: BriefingInput): Promise<ToolExecutionResult> {
       "5) Recommended focus for next period. Be concise. Surface what matters, don't list everything.",
   });
 }
-
-const tool: ToolDefinition = {
-  description:
-    "Generate a board-meeting-style briefing from recent decisions, stuck items, " +
-    "OKR drift, and company context. Use when the user asks for a weekly review, " +
-    "board prep, 'what's the status', or when the weekly-review skill activates. " +
-    "Returns structured data the model formats into a readable briefing. " +
-    "Optional 'days' parameter limits the decision window (default 7).",
-  input_schema: {
-    type: "object",
-    properties: {
-      days: {
-        type: "number",
-        description: "Number of days to include in the briefing window (default 7).",
-      },
-    },
-  },
-  defaultRiskLevel: RiskLevel.Low,
-  execute: (input: Record<string, unknown>, _ctx: ToolContext) =>
-    run(input as unknown as BriefingInput),
-};
-
-export default tool;
